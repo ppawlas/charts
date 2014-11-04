@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Charts</title>
+        <script type="text/javascript" src="d3/d3.js"></script>
+        <script type="text/javascript" src="js/helper.js"></script>
+        <script type="text/javascript" src="js/Chart.js"></script>
+        <script type="text/javascript" src="js/ColumnChart.js"></script>
+        <script type="text/javascript" src="js/BarChart.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/chart.css">
+    <body>
+        <div id="chartDiv"></div>
+        <div id="chartDiv2"></div>
+        <script type="text/javascript">
+
+            var margin = {top: 30, right: 30, bottom: 30, left: 30};
+            var width = 300;
+            var height = 300;
+
+            Chart.counter = 0;
+
+            var chart = new ColumnChart(width, height, margin, "#chartDiv");
+            chart.setData(generateRandomDataset(10, 20));
+            chart.draw();
+
+            var chart2 = new BarChart(width, height, margin, "#chartDiv2");
+            chart2.setData(generateRandomDataset(10, 20));
+            chart2.draw();
+        </script>
+    </body>
+</html>
