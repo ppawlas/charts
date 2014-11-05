@@ -11,7 +11,7 @@ function Chart(width, height, margin, parentSelector) {
 			.attr("width", this.width + margin.left + margin.right)
 			.attr("height", this.height + margin.top + margin.bottom)
 		.append("g")
-			.attr("transform", "translate(" + margin.left + "," + margin.right + ")");
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 	this.svg.append("clipPath")
 		.attr("id", this.getUniqueId("chart-area"))
@@ -21,13 +21,24 @@ function Chart(width, height, margin, parentSelector) {
 	this.chartGroup = this.svg.append("g")
 		.attr("id", this.getUniqueId("chart-group"))
 		.attr("clip-path", "url(#"+this.getUniqueId("chart-area")+")");
+
+	this.tooltipGroup = this.svg.append("g")
+		.style("pointer-events", "none")
+		.attr("class", "tooltip")
+		.attr("visibility", "hidden");
+
+	this.tooltip = this.tooltipGroup
+		.append("rect")
+		.attr({fill: "white", stroke: "black"});
+
+	this.tooltipText = this.tooltipGroup.append("text");
 };
 Chart.prototype.getUniqueId = function(id) {
 	return id + this.counter;
-}
+};
 Chart.prototype.key = function(d) {
 	return d.key;
-}
+};
 Chart.prototype.setData = function(dataset) {
 	this.dataset = dataset;
 };

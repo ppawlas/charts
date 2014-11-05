@@ -1,6 +1,6 @@
-function BarChart(width, height, margin, parentSelector) {
-	ColumnChart.call(this, width, height, margin, parentSelector);
-}
+function BarChart(width, height, margin, parentSelector, colorClass) {
+	ColumnChart.call(this, width, height, margin, parentSelector, colorClass);
+};
 
 BarChart.prototype = Object.create( ColumnChart.prototype );
 
@@ -17,27 +17,48 @@ BarChart.prototype.setScales = function() {
 				.domain(this.dataset.map(function(d) { return d.key; }))
 				.rangeRoundBands([this.height, 0], padding)
 		}
+
+		this.setColorScale();
 	} else {
 		console.error("No dataset to set scales on.");
 	}
-}
+};
 
-BarChart.prototype.drawChart = function() {
-	if (this.dataset) {
-		var that = this;
-		
-		this.chartGroup.selectAll("rect")
-			.data(this.dataset, this.key)
-			.enter()
-			.append("rect")
-				.attr({
-					x: 0,
-					y: function(d, i) { return that.scales.y(i); },
-					width: function(d) { return that.scales.x(d.value); },
-					height: this.scales.y.rangeBand(),
-					fill: "red"
-				});
-	} else {
-		console.error("No dataset to draw.")
+BarChart.prototype.enhanceOrdinalAxis = function() {
+	var that = this;
+	var anyTickVisible = false;
+
+	this.svg.selectAll(".y.axis text")
+		.each(function() {
+			var bbox = this.getBBox();
+			var tickHeight = bbox.height;
+			var tickWidth = bbox.width;
+			if ( (this.textContent.length === 0) || (tickHeight > that.scales.y.rangeBand()) || (tickWidth > that.margin.left / 2) ) {
+				this.remove();
+		 	} else if (!anyTickVisible) {
+				anyTickVisible = true;
+			}
+		});
+
+	if (!anyTickVisible) {
+		this.axes.y.tickValues([]);
+		this.svg.select(".y.axis")
+			.call(this.axes.y);
 	}
-}
+};
+
+BarChart.prototype.getChartAttributes = function() {
+	var that = this;
+	return {
+		y: function(d, i) { return that.scales.y(d.key); },
+		width: function(d) { return that.scales.x(d.value); },
+		height: this.scales.y.rangeBand(),
+		fill: function(d) { return that.scales.color(d.value); }
+	};
+};
+
+BarChart.prototype.getTooltipPosition = function(rect) {
+	var x = parseFloat(rect.attr("width"));
+	var y = parseFloat(rect.attr("y")) + parseFloat(rect.attr("height")) / 2;
+	return {x: x, y: y};
+};
