@@ -1,22 +1,23 @@
 function BarChart(width, height, margin, parentSelector, colorClass) {
 	ColumnChart.call(this, width, height, margin, parentSelector, colorClass);
-};
+}
 
 BarChart.prototype = Object.create( ColumnChart.prototype );
 
 BarChart.prototype.setScales = function() {
 	if (this.dataset) {
-		var padding = 0.1;
+		var padding = 20;
+		var midPadding = 0.1;
 
 		this.scales = {
 			x: d3.scale.linear()
 				.domain([0, d3.max(this.dataset, function(d) { return d.value; })])
-				.range([0, this.width]),
+				.range([0, this.width - padding]),
 
 			y: d3.scale.ordinal()
 				.domain(this.dataset.map(function(d) { return d.key; }))
-				.rangeRoundBands([this.height, 0], padding)
-		}
+				.rangeRoundBands([this.height, padding], midPadding)
+		};
 
 		this.setColorScale();
 	} else {
@@ -57,8 +58,26 @@ BarChart.prototype.getChartAttributes = function() {
 	};
 };
 
-BarChart.prototype.getTooltipPosition = function(rect) {
-	var x = parseFloat(rect.attr("width"));
+BarChart.prototype.getLabelsAttributes = function() {
+	var padding = 5;
+	var that = this;
+	return {
+		x: function(d) { return that.scales.x(d.value) + padding; },
+		y: function(d) { return that.scales.y(d.key) + that.scales.y.rangeBand(); }
+	};
+};
+
+BarChart.prototype.enhanceLabels = function(that) {
+	var labelHeight = that.getBBox().height;
+	if ( labelHeight > this.scales.y.rangeBand() ) {
+		that.remove();
+	}
+};
+
+BarChart.prototype.getTooltipPosition = function(obj) {
+	var mouse = d3.mouse(obj);
+	var rect = d3.select(obj);
+	var x = parseFloat(mouse[0]);
 	var y = parseFloat(rect.attr("y")) + parseFloat(rect.attr("height")) / 2;
 	return {x: x, y: y};
 };

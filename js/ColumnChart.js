@@ -4,7 +4,7 @@ function ColumnChart(width, height, margin, parentSelector, colorClass) {
 	this.colorClass = colorClass;
 	this.scales = null;
 	this.axes = null;
-};
+}
 
 ColumnChart.prototype = Object.create( Chart.prototype );
 
@@ -18,21 +18,22 @@ ColumnChart.prototype.setColorScale = function() {
 	} else {
 		console.error("Color class is not set.");
 	}
-}
+};
 
 ColumnChart.prototype.setScales = function() {
 	if (this.dataset) {
-		var padding = 0.1;
+		var padding = 20;
+		var midPadding = 0.1;
 
 		this.scales = {
 			x: d3.scale.ordinal()
 				.domain(this.dataset.map(function(d) { return d.key; }))
-				.rangeRoundBands([0, this.width], padding),
+				.rangeRoundBands([0, this.width - padding], midPadding),
 
 			y: d3.scale.linear()
 				.domain([0, d3.max(this.dataset, function(d) { return d.value; })])
-				.range([this.height, 0])
-		}
+				.range([this.height, padding])
+		};
 
 		this.setColorScale();
 	} else {
@@ -50,7 +51,7 @@ ColumnChart.prototype.setAxes = function() {
 			y: d3.svg.axis()
 				.scale(this.scales.y)
 				.orient("left")
-		}
+		};
 	} else {
 		console.error("No dataset or scales.");
 	}
@@ -105,9 +106,28 @@ ColumnChart.prototype.getChartAttributes = function() {
 	};
 };
 
-ColumnChart.prototype.getTooltipPosition = function(rect) {
+ColumnChart.prototype.getLabelsAttributes = function() {
+	var padding = 5;
+	var that = this;
+	return {
+		x: function(d) { return that.scales.x(d.key) + that.scales.x.rangeBand() / 2; },
+		y: function(d) { return that.scales.y(d.value) - padding; },
+		"text-anchor": "middle"
+	};
+};
+
+ColumnChart.prototype.enhanceLabels = function(that) {
+	var labelWidth = that.getBBox().width;
+	if (labelWidth > this.scales.x.rangeBand()) {
+		that.remove();
+	}
+};
+
+ColumnChart.prototype.getTooltipPosition = function(obj) {
+	var mouse = d3.mouse(obj);
+	var rect = d3.select(obj);
 	var x = parseFloat(rect.attr("x")) + parseFloat(rect.attr("width")) / 2;
-	var y = parseFloat(rect.attr("y"));
+	var y = parseFloat(mouse[1]);
 	return {x: x, y: y};
 };
 
@@ -122,32 +142,36 @@ ColumnChart.prototype.drawChart = function() {
 				.attr(this.getChartAttributes())
 				.on("mouseover", function(d) {
 					d3.select(this).transition().duration(250)
-						.attr("fill", function(d) { return d3.rgb(that.scales.color(d.value)).brighter(); })
+						.attr("fill", function(d) { return d3.rgb(that.scales.color(d.value)).brighter(); });
 
-					var tooltipPosition = that.getTooltipPosition(d3.select(this));
-					that.tooltipGroup
-						.attr({
-							visibility: "visible",
-							transform: "translate(" + tooltipPosition.x + "," + tooltipPosition.y + ")"
-						});
-					that.tooltipText.text(d.key + ": " + d.value);
-
-					var tooltipPadding = 5;
-					that.tooltip
-						.attr("x", -tooltipPadding)
-						.attr("y", -that.tooltipText.node().getBBox().height -tooltipPadding)
-						.attr("width", that.tooltipText.node().getBBox().width + tooltipPadding * 2)
-						.attr("height", that.tooltipText.node().getBBox().height + tooltipPadding * 2);
+					var tooltipPosition = that.getTooltipPosition(this);
+					that.tooltip.show(tooltipPosition.x, tooltipPosition.y, that.getTooltipText(d));
+				})
+				.on("mousemove", function(d) {
+					var tooltipPosition = that.getTooltipPosition(this);
+					that.tooltip.move(tooltipPosition.x, tooltipPosition.y);
 				})
 				.on("mouseout", function(d) {
 					d3.select(this).transition().duration(250)
-						.attr("fill", function(d) { return that.scales.color(d.value); })
+						.attr("fill", function(d) { return that.scales.color(d.value); });
 
-					that.tooltipGroup.attr("visibility", "hidden");
+					that.tooltip.hide();
 				});
 
+		this.chartGroup.selectAll("text")
+			.data(this.dataset, this.key)
+			.enter()
+			.append("text")
+				.text(function(d) { return d.value; })
+				.attr(this.getLabelsAttributes());
+
+		this.chartGroup.selectAll("text")
+			.each(function() {
+				that.enhanceLabels(this);
+			});
+
 	} else {
-		console.error("No dataset to draw.")
+		console.error("No dataset to draw.");
 	}
 };
 

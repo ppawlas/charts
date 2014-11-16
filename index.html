@@ -9,14 +9,17 @@
         <script type="text/javascript" src="js/Chart.js"></script>
         <script type="text/javascript" src="js/ColumnChart.js"></script>
         <script type="text/javascript" src="js/BarChart.js"></script>
+        <script type="text/javascript" src="js/LineChart.js"></script>
+        <script type="text/javascript" src="js/Tooltip.js"></script>
         <link rel="stylesheet" type="text/css" href="css/chart.css">
     <body>
+        <div id="chartDiv3"></div>
         <div id="chartDiv"></div>
         <div id="chartDiv2"></div>
         <script type="text/javascript">
 
-            var margin = {top: 30, right: 60, bottom: 30, left: 60};
-            var width = 600;
+            var margin = {top: 30, right: 90, bottom: 30, left: 60};
+            var width = 900;
             var height = 300;
 
             Chart.counter = 0;
@@ -28,6 +31,10 @@
             var chart2 = new BarChart(width, height, margin, "#chartDiv2", colorbrewer.Greens[9]);
             chart2.setData(generateRandomDataset());
             chart2.draw();
+
+            var chart3 = new LineChart(width, height, margin, "#chartDiv3", colorbrewer.Reds[5]);
+            chart3.setData(generateRandomDataset());
+            chart3.draw();
         </script>
     </body>
 </html>
