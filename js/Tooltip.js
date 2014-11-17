@@ -1,8 +1,8 @@
-function Tooltip(parent, margin) {
-	this.parent = parent;
+function Tooltip(chart) {
+	this.chart = chart;
 	this.padding = 10;
 
-	this.group = parent.append("g")
+	this.group = chart.svg.append("g")
 		.style("pointer-events", "none")
 		.attr("class", "tooltip")
 		.attr("visibility", "hidden");
@@ -15,11 +15,10 @@ function Tooltip(parent, margin) {
 }
 
 Tooltip.prototype.adjustPosition = function(x, y) {
-	var parentBbox = this.parent.select(".chart").node().getBBox();
 	var labelBbox = this.label.node().getBBox();
-	
-	var adjustedX = ((x + labelBbox.width + 3 * this.padding) > parentBbox.width) ? (x - labelBbox.width - 3 * this.padding) : x + this.padding;
-	var adjustedY = ((y + labelBbox.height + 3 * this.padding) > parentBbox.height) ? (y - labelBbox.height - 3 * this.padding) : y + this.padding;
+
+	var adjustedX = ((x + labelBbox.width + 3 * this.padding) > chart.width) ? (x - labelBbox.width - 3 * this.padding) : x + this.padding;
+	var adjustedY = ((y + labelBbox.height + 3 * this.padding) > chart.height) ? (y - labelBbox.height - 3 * this.padding) : y + this.padding;
 
 	return { x: adjustedX, y: adjustedY };
 };

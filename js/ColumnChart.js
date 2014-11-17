@@ -28,7 +28,7 @@ ColumnChart.prototype.setScales = function() {
 		this.scales = {
 			x: d3.scale.ordinal()
 				.domain(this.dataset.map(function(d) { return d.key; }))
-				.rangeRoundBands([0, this.width - padding], midPadding),
+				.rangeRoundBands([0, this.width], midPadding),
 
 			y: d3.scale.linear()
 				.domain([0, d3.max(this.dataset, function(d) { return d.value; })])
@@ -163,7 +163,8 @@ ColumnChart.prototype.drawChart = function() {
 			.enter()
 			.append("text")
 				.text(function(d) { return d.value; })
-				.attr(this.getLabelsAttributes());
+				.attr(this.getLabelsAttributes())
+				.style("pointer-events", "none");
 
 		this.chartGroup.selectAll("text")
 			.each(function() {

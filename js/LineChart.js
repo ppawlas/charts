@@ -4,7 +4,8 @@ function LineChart(width, height, margin, parentSelector, colorClass) {
 	var that = this;
 	this.line = d3.svg.line()
 		.x(function(d) { return that.scales.x(d.key); })
-		.y(function(d) { return that.scales.y(d.value); });
+		.y(function(d) { return that.scales.y(d.value); })
+		.interpolate("linear");
 }
 
 LineChart.prototype = Object.create( ColumnChart.prototype );
@@ -22,11 +23,12 @@ LineChart.prototype.setColorScale = function() {
 LineChart.prototype.setScales = function() {
 	if (this.dataset) {
 		var padding = 20;
+		var midPadding = 1;
 
 		this.scales = {
 			x: d3.scale.ordinal()
 				.domain(this.dataset.map(function(d) { return d.key; }))
-				.rangePoints([0, this.width - padding]),
+				.rangePoints([0, this.width], midPadding),
 
 			y: d3.scale.linear()
 				.domain([0, d3.max(this.dataset, function(d) { return d.value; })])
@@ -70,6 +72,16 @@ LineChart.prototype.getLabelsAttributes = function() {
 		y: function(d) { return that.scales.y(d.value) - padding; },
 		"text-anchor": "middle"
 	};
+};
+
+ColumnChart.prototype.enhanceLabels = function(that) {
+	var rangeWidth = this.scales.x.rangeExtent()[1];
+	var rangeSize = this.scales.x.range().length;
+
+	var labelWidth = that.getBBox().width;
+	if (labelWidth > (rangeWidth / rangeSize)) {
+		that.remove();
+	}
 };
 
 LineChart.prototype.drawChart = function() {
@@ -119,7 +131,13 @@ LineChart.prototype.drawChart = function() {
 			.enter()
 			.append("text")
 				.text(function(d) { return d.value; })
-				.attr(this.getLabelsAttributes());
+				.attr(this.getLabelsAttributes())
+				.style("pointer-events", "none");
+
+		this.chartGroup.selectAll("text")
+			.each(function() {
+				that.enhanceLabels(this);
+			});
 
 	} else {
 		console.error("No dataset to draw.");

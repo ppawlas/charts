@@ -24,7 +24,7 @@ function Chart(width, height, margin, parentSelector) {
 
 	this.chartGroup = this.clipGroup.append("g").attr("class", "chart");
 
-	this.tooltip = new Tooltip(this.clipGroup, this.margin);
+	this.tooltip = new Tooltip(this);
 }
 Chart.prototype.getUniqueId = function(id) {
 	return id + this.counter;

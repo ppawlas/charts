@@ -12,7 +12,7 @@ BarChart.prototype.setScales = function() {
 		this.scales = {
 			x: d3.scale.linear()
 				.domain([0, d3.max(this.dataset, function(d) { return d.value; })])
-				.range([0, this.width - padding]),
+				.range([0, this.width]),
 
 			y: d3.scale.ordinal()
 				.domain(this.dataset.map(function(d) { return d.key; }))
@@ -62,8 +62,16 @@ BarChart.prototype.getLabelsAttributes = function() {
 	var padding = 5;
 	var that = this;
 	return {
-		x: function(d) { return that.scales.x(d.value) + padding; },
-		y: function(d) { return that.scales.y(d.key) + that.scales.y.rangeBand(); }
+		x: function(d) {
+			var labelWidth = this.getBBox().width;
+			var scaledX = that.scales.x(d.value);
+			return (scaledX + padding + labelWidth) > that.width ? scaledX - padding - labelWidth : scaledX + padding;
+		},
+		y: function(d) { return that.scales.y(d.key) + that.scales.y.rangeBand() / 2 + this.getBBox().height / 4; },
+		fill: function(d) {
+			var labelWidth = this.getBBox().width;
+			var scaledX = that.scales.x(d.value);
+			return (scaledX + padding + labelWidth) > that.width ? "white" : "black";		}
 	};
 };
 
